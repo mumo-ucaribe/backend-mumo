@@ -11,7 +11,7 @@ class User(models.Model):
     def __str__(self):
         return self.username
     
-class insumo(models.Model):
+class Insumo(models.Model):
     id = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     cantidad = models.DecimalField(max_digits=10, decimal_places=2)
@@ -23,10 +23,10 @@ class insumo(models.Model):
         return self.nombre
     
 
-class receta(models.Model):
+class Receta(models.Model):
     id = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
-    insumo = models.ManyToManyField(insumo, related_name='recetas')
+    insumo = models.ManyToManyField(Insumo, related_name='recetas')
     descripcion = models.TextField()
     porciones = models.DecimalField(max_digits=10, decimal_places=2)
     categoria = models.CharField(max_length=50)
@@ -35,9 +35,9 @@ class receta(models.Model):
     def __str__(self):
         return self.nombre
 
-class venta(models.Model):
+class Venta(models.Model):
     id = models.BigAutoField(primary_key=True)
-    receta = models.ManyToManyField(receta, related_name='ventas')
+    receta = models.ManyToManyField(Receta, related_name='ventas')
     fecha_venta = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     completada = models.BooleanField(default=False)
@@ -45,9 +45,9 @@ class venta(models.Model):
     def __str__(self):
         return f"Venta {self.id} - Total: {self.total}"
     
-class merma(models.Model):
+class Merma(models.Model):
     id = models.BigAutoField(primary_key=True)
-    insumo = models.ForeignKey(insumo, on_delete=models.CASCADE, related_name='mermas')
+    insumo = models.ForeignKey(Insumo, on_delete=models.CASCADE, related_name='mermas')
     cantidad = models.DecimalField(max_digits=10, decimal_places=2)
     fecha_merma = models.DateTimeField(auto_now_add=True)
     
