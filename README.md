@@ -2,11 +2,9 @@
 
 ## Authentication
 
-The API uses Django's built-in authentication system with token authentication. To access protected endpoints, you need to include the authentication token in the request header:
+The API uses Django's built-in authentication system based on **username and password**. To access protected endpoints, you must log in and maintain an active session using cookies or basic authentication.
 
-```
-Authorization: Token <your_token>
-```
+No token is required for authentication.
 
 ### Authentication Endpoints
 
@@ -23,19 +21,6 @@ Request body:
     "first_name": "string (optional)",
     "last_name": "string (optional)"
 }
-```
-
-#### Get authentication token
-```
-POST /api-auth/token/
-```
-Request body:
-```json
-{
-    "username": "string",
-    "password": "string"
-}
-```
 
 ## API Endpoints
 
@@ -176,7 +161,8 @@ All responses are in JSON format and include:
 - Most endpoints require authentication
 - Some endpoints allow read-only access without authentication
 - User registration is open to all
-- Token authentication is required for write operations
+- Session or basic authentication is required for write operations.
+Token authentication is not used.
 
 ## Error Handling
 
