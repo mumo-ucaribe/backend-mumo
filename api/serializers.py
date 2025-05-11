@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Insumo, Receta, Venta, Merma, RecetaInsumo
 
+
+# Serializador para el modelo de Usuario
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
@@ -21,6 +23,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         )
         return user
 
+
+# Serializador para el modelo de Insumo
 class InsumoSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Insumo
