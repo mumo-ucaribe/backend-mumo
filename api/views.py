@@ -4,11 +4,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, F
 from django.contrib.auth.models import User
-from .models import Insumo, Receta, Venta, Merma, RecetaInsumo
+from .models import Insumo, Receta, Venta, Merma #, RecetaInsumo
 # importar los serializadores de la app
 from .serializers import (
     UserSerializer, InsumoSerializer, RecetaSerializer,
-    VentaSerializer, MermaSerializer, RecetaInsumoSerializer
+    VentaSerializer, MermaSerializer, #RecetaInsumoSerializer
 )
 
 
@@ -38,6 +38,7 @@ class InsumoViewSet(viewsets.ModelViewSet):
         insumos = Insumo.objects.filter(cantidad__lt=10)
         serializer = self.get_serializer(insumos, many=True)
         return Response(serializer.data)
+    
 
     @action(detail=False, methods=['get'])
     def valor_total(self, request):
