@@ -144,6 +144,7 @@ class VentaSerializer(serializers.HyperlinkedModelSerializer):
             raise serializers.ValidationError("El total no puede ser negativo")
         return value
 
+# Serializador para el modelo de Merma
 class MermaSerializer(serializers.HyperlinkedModelSerializer):
     insumo_url = serializers.HyperlinkedRelatedField(
         view_name='insumo-detail',
@@ -159,6 +160,31 @@ class MermaSerializer(serializers.HyperlinkedModelSerializer):
             'url': {'view_name': 'merma-detail'},
             'insumo': {'view_name': 'insumo-detail'}
         }
+
+    # Validacion al Crear una Merma y Actualizar la Cantidad de Insumo
+    def create(self, validated_data):
+        # Verificar si el insumo existe
+        if 'insumo' not in validated_data:
+            raise serializers.ValidationError("El insumo es requerido")
+        try:
+            insumo_instance = Insumo.objects.get(id=validated_data['insumo'].id)
+        except Insumo.DoesNotExist:
+            raise serializers.ValidationError("El insumo no existe")
+        
+        # Verificar si la cantidad de merma es válida
+        cantidad_merma = validated_data['cantidad']
+
+        if cantidad_merma <= 0:
+            raise serializers.ValidationError("La cantidad de merma debe ser mayor a 0")
+        
+        # Sumar la cantidad de merma a la cantidad del insumo
+        insumo_instance.cantidad += cantidad_merma
+        insumo_instance.save()
+
+        # Crear la instancia de Merma
+        return super().create(validated_data)
+
+
 
     def validate_cantidad(self, value):
         if value <= 0:
