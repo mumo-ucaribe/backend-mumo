@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 # Modelo de Insumo
 class Insumo(models.Model):
@@ -11,6 +12,19 @@ class Insumo(models.Model):
     
     def __str__(self):
         return self.nombre
+    
+    # Validaciones para el modelo Insumo
+
+    # Validación de Eliminar Insumo
+    def delete(self, *args, **kwargs):
+        """
+        Validación para evitar eliminar un insumo que está relacionado con una receta
+        """
+        if RecetaInsumo.objects.filter(insumo=self).exists():
+            raise ValidationError(
+                "No se puede eliminar un insumo que está relacionado con al menos una receta."
+            )
+        return super().delete(*args, **kwargs)
     
 
 # Modelo de RecetaInsumo
@@ -50,7 +64,9 @@ class Receta(models.Model):
     
     @property
     def costo_total(self):
-        return sum(item.subtotal for item in self.recetainsumo_set.all())
+        # traemos todas las filas de RecetaInsumo que apunten a esta receta
+        items = RecetaInsumo.objects.filter(receta=self)
+        return sum(item.subtotal for item in items)
 
 # Modelo de Venta
 class Venta(models.Model):
