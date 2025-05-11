@@ -4,12 +4,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, F
 from django.contrib.auth.models import User
-from .models import Insumo, Receta, Venta, Merma, RecetaInsumo
+from .models import Insumo, Receta, Venta, Merma #, RecetaInsumo
+# importar los serializadores de la app
 from .serializers import (
     UserSerializer, InsumoSerializer, RecetaSerializer,
-    VentaSerializer, MermaSerializer, RecetaInsumoSerializer
+    VentaSerializer, MermaSerializer, #RecetaInsumoSerializer
 )
 
+
+# UserViewSet es el controlador para el modelo de Usuario
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -21,6 +24,8 @@ class UserViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return super().get_permissions()
 
+
+# InsumoViewSet es el controlador para el modelo de Insumo
 class InsumoViewSet(viewsets.ModelViewSet):
     queryset = Insumo.objects.all()
     serializer_class = InsumoSerializer
@@ -33,6 +38,7 @@ class InsumoViewSet(viewsets.ModelViewSet):
         insumos = Insumo.objects.filter(cantidad__lt=10)
         serializer = self.get_serializer(insumos, many=True)
         return Response(serializer.data)
+    
 
     @action(detail=False, methods=['get'])
     def valor_total(self, request):
@@ -162,15 +168,17 @@ class MermaViewSet(viewsets.ModelViewSet):
         
         return Response(resumen)
 
-class RecetaInsumoViewSet(viewsets.ModelViewSet):
-    queryset = RecetaInsumo.objects.all()
-    serializer_class = RecetaInsumoSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    http_method_names = ['get', 'post', 'put', 'delete']
+# TODO: Analizar si se necesita un endpoint específico para RecetaInsumo
 
-    def get_queryset(self):
-        queryset = RecetaInsumo.objects.all()
-        receta_id = self.request.query_params.get('receta', None)
-        if receta_id:
-            queryset = queryset.filter(receta_id=receta_id)
-        return queryset
+# class RecetaInsumoViewSet(viewsets.ModelViewSet):
+#     queryset = RecetaInsumo.objects.all()
+#     serializer_class = RecetaInsumoSerializer
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+#     http_method_names = ['get', 'post', 'put', 'delete']
+
+#     def get_queryset(self) -> QuerySet:
+#         queryset = RecetaInsumo.objects.all()
+#         receta_id = self.request.GET.get('receta', None)
+#         if receta_id:
+#             queryset = queryset.filter(receta_id=receta_id)
+#         return queryset
