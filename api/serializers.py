@@ -135,14 +135,32 @@ class RecetaSimpleSerializer(serializers.ModelSerializer):
 
 class VentaSerializer(serializers.HyperlinkedModelSerializer):
     recetas = RecetaSimpleSerializer(source='receta', many=True, read_only=True)
+    receta_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False
+    )
 
     class Meta:
         model = Venta
-        fields = ['url', 'id', 'recetas', 'fecha_venta', 'total', 'completada']
+        fields = ['url', 'id', 'recetas', 'receta_ids', 'fecha_venta', 'total', 'completada']
         read_only_fields = ['fecha_venta']
         extra_kwargs = {
             'url': {'view_name': 'venta-detail'}
         }
+
+    def validate_receta_ids(self, value):
+        from .models import Receta
+        if value:
+            # Verificar que todas las recetas existan
+            recetas_existentes = Receta.objects.filter(id__in=value).values_list('id', flat=True)
+            recetas_no_existentes = set(value) - set(recetas_existentes)
+            
+            if recetas_no_existentes:
+                raise serializers.ValidationError(
+                    f"Las siguientes recetas no existen: {recetas_no_existentes}"
+                )
+        return value
 
     def validate_total(self, value):
         if value < 0:
@@ -150,19 +168,22 @@ class VentaSerializer(serializers.HyperlinkedModelSerializer):
         return value
 
     def create(self, validated_data):
-        recetas_data = validated_data.pop('receta', [])
+        receta_ids = validated_data.pop('receta_ids', [])
         venta = Venta.objects.create(**validated_data)
-        venta.receta.set(recetas_data)
+        
+        if receta_ids:
+            venta.receta.set(receta_ids)
+        
         return venta
 
     def update(self, instance, validated_data):
-        recetas_data = validated_data.pop('receta', None)
+        receta_ids = validated_data.pop('receta_ids', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         
-        if recetas_data is not None:
-            instance.receta.set(recetas_data)
+        if receta_ids is not None:
+            instance.receta.set(receta_ids)
         
         return instance
 
