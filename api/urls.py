@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     UserViewSet, InsumoViewSet, RecetaViewSet, VentaViewSet, MermaViewSet,
+    login_view
     #RecetaInsumoViewSet
 )
 
@@ -16,4 +17,5 @@ router.register(r'mermas', MermaViewSet, basename='merma')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('login/', login_view, name='login'),
 ] 
