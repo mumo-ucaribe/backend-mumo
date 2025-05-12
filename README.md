@@ -2,13 +2,44 @@
 
 ## Authentication
 
-The API uses Django's built-in authentication system based on **username and password**. To access protected endpoints, you must log in and maintain an active session using cookies or basic authentication.
+La API utiliza autenticación basada en tokens y protección CSRF. Para acceder a los endpoints protegidos, debes seguir estos pasos:
 
-No token is required for authentication.
+1. **Login inicial**:
+   - Realiza una petición POST a `/api/login/` con las credenciales
+   - El servidor devolverá un token de autenticación
+   - Guarda este token para futuras peticiones
 
-### Authentication Endpoints
+2. **Peticiones autenticadas**:
+   - Incluye el token en el header `Authorization: Token <tu-token>`
+   - El CSRF token se maneja automáticamente con las cookies
 
-#### Register a new user
+### Endpoints de Autenticación
+
+#### Login
+
+**POST** `/api/login/`
+
+Request body:
+```json
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+Response:
+```json
+{
+  "token": "string",
+  "user": {
+    "id": "integer",
+    "username": "string",
+    "email": "string"
+  }
+}
+```
+
+#### Registro de Usuario
 
 **POST** `/api/users/`
 
@@ -21,32 +52,32 @@ Request body:
   "first_name": "string (optional)",
   "last_name": "string (optional)"
 }
-````
+```
 
 ## API Endpoints
 
 ### Users
 
-* `GET /api/users/` – List all users
-* `POST /api/users/` – Create a new user
-* `GET /api/users/{id}/` – Get user details
-* `PUT /api/users/{id}/` – Update user
-* `DELETE /api/users/{id}/` – Delete user
+* `GET /api/users/` – Listar todos los usuarios
+* `POST /api/users/` – Crear nuevo usuario
+* `GET /api/users/{id}/` – Obtener detalles de usuario
+* `PUT /api/users/{id}/` – Actualizar usuario
+* `DELETE /api/users/{id}/` – Eliminar usuario
 
 ### Insumos (Ingredients)
 
-* `GET /api/insumos/` – List all ingredients
-* `POST /api/insumos/` – Create new ingredient
-* `GET /api/insumos/{id}/` – Get ingredient details
-* `PUT /api/insumos/{id}/` – Update ingredient
-* `DELETE /api/insumos/{id}/` – Delete ingredient
+* `GET /api/insumos/` – Listar todos los ingredientes
+* `POST /api/insumos/` – Crear nuevo ingrediente
+* `GET /api/insumos/{id}/` – Obtener detalles de ingrediente
+* `PUT /api/insumos/{id}/` – Actualizar ingrediente
+* `DELETE /api/insumos/{id}/` – Eliminar ingrediente
 
-**Special endpoints:**
+**Endpoints especiales:**
 
-* `GET /api/insumos/stock_bajo/` – Get ingredients with low stock (< 10 units)
-* `GET /api/insumos/valor_total/` – Get total inventory value
+* `GET /api/insumos/stock_bajo/` – Obtener ingredientes con stock bajo (< 10 unidades)
+* `GET /api/insumos/valor_total/` – Obtener valor total del inventario
 
-**Request body for creating/updating ingredients:**
+**Request body para crear/actualizar ingredientes:**
 
 ```json
 {
@@ -59,18 +90,18 @@ Request body:
 
 ### Recetas (Recipes)
 
-* `GET /api/recetas/` – List all recipes
-* `POST /api/recetas/` – Create new recipe
-* `GET /api/recetas/{id}/` – Get recipe details
-* `PUT /api/recetas/{id}/` – Update recipe
-* `DELETE /api/recetas/{id}/` – Delete recipe
+* `GET /api/recetas/` – Listar todas las recetas
+* `POST /api/recetas/` – Crear nueva receta
+* `GET /api/recetas/{id}/` – Obtener detalles de receta
+* `PUT /api/recetas/{id}/` – Actualizar receta
+* `DELETE /api/recetas/{id}/` – Eliminar receta
 
-**Special endpoints:**
+**Endpoints especiales:**
 
-* `GET /api/recetas/por_categoria/?categoria={categoria}` – Get recipes by category
-* `POST /api/recetas/{id}/verificar_insumos/` – Check if there are enough ingredients
+* `GET /api/recetas/por_categoria/?categoria={categoria}` – Obtener recetas por categoría
+* `POST /api/recetas/{id}/verificar_insumos/` – Verificar si hay suficientes ingredientes
 
-**Request body for creating/updating recipes:**
+**Request body para crear/actualizar recetas:**
 
 ```json
 {
@@ -89,18 +120,18 @@ Request body:
 
 ### Ventas (Sales)
 
-* `GET /api/ventas/` – List all sales
-* `POST /api/ventas/` – Create new sale
-* `GET /api/ventas/{id}/` – Get sale details
-* `PUT /api/ventas/{id}/` – Update sale
-* `DELETE /api/ventas/{id}/` – Delete sale
+* `GET /api/ventas/` – Listar todas las ventas
+* `POST /api/ventas/` – Crear nueva venta
+* `GET /api/ventas/{id}/` – Obtener detalles de venta
+* `PUT /api/ventas/{id}/` – Actualizar venta
+* `DELETE /api/ventas/{id}/` – Eliminar venta
 
-**Special endpoints:**
+**Endpoints especiales:**
 
-* `GET /api/ventas/ventas_por_periodo/?fecha_inicio={date}&fecha_fin={date}` – Get sales by period
-* `GET /api/ventas/resumen_ventas/` – Get sales summary
+* `GET /api/ventas/ventas_por_periodo/?fecha_inicio={date}&fecha_fin={date}` – Obtener ventas por período
+* `GET /api/ventas/resumen_ventas/` – Obtener resumen de ventas
 
-**Request body for creating/updating sales:**
+**Request body para crear/actualizar ventas:**
 
 ```json
 {
@@ -112,18 +143,18 @@ Request body:
 
 ### Mermas (Waste)
 
-* `GET /api/mermas/` – List all waste records
-* `POST /api/mermas/` – Create new waste record
-* `GET /api/mermas/{id}/` – Get waste record details
-* `PUT /api/mermas/{id}/` – Update waste record
-* `DELETE /api/mermas/{id}/` – Delete waste record
+* `GET /api/mermas/` – Listar todas las mermas
+* `POST /api/mermas/` – Crear nueva merma
+* `GET /api/mermas/{id}/` – Obtener detalles de merma
+* `PUT /api/mermas/{id}/` – Actualizar merma
+* `DELETE /api/mermas/{id}/` – Eliminar merma
 
-**Special endpoints:**
+**Endpoints especiales:**
 
-* `GET /api/mermas/mermas_por_periodo/?fecha_inicio={date}&fecha_fin={date}` – Get waste by period
-* `GET /api/mermas/resumen_mermas/` – Get waste summary by ingredient
+* `GET /api/mermas/mermas_por_periodo/?fecha_inicio={date}&fecha_fin={date}` – Obtener mermas por período
+* `GET /api/mermas/resumen_mermas/` – Obtener resumen de mermas por ingrediente
 
-**Request body for creating/updating waste records:**
+**Request body para crear/actualizar mermas:**
 
 ```json
 {
@@ -132,61 +163,39 @@ Request body:
 }
 ```
 
-### RecetaInsumos (Recipe Ingredients)
+## Formato de Respuesta
 
-* `GET /api/recetainsumos/` – List all recipe ingredients
-* `POST /api/recetainsumos/` – Create new recipe ingredient
-* `GET /api/recetainsumos/{id}/` – Get recipe ingredient details
-* `PUT /api/recetainsumos/{id}/` – Update recipe ingredient
-* `DELETE /api/recetainsumos/{id}/` – Delete recipe ingredient
+Todas las respuestas están en formato JSON e incluyen:
 
-**Filter by recipe:**
+* Para endpoints de lista: resultados paginados con 10 items por página
+* Para endpoints de detalle: detalles completos del objeto
+* Para respuestas de error: mensaje de error y detalles
 
-* `GET /api/recetainsumos/?receta={receta_id}` – Get ingredients for a specific recipe
+## Requisitos de Autenticación
 
-**Request body for creating/updating recipe ingredients:**
+* La mayoría de los endpoints requieren autenticación
+* Algunos endpoints permiten acceso de solo lectura sin autenticación
+* El registro de usuarios está abierto para todos
+* Se requiere token de autenticación para operaciones de escritura
+* Se requiere CSRF token para todas las peticiones que modifican datos
 
-```json
-{
-  "receta": "receta_id",
-  "insumo": "insumo_id",
-  "cantidad": "decimal"
-}
-```
+## Manejo de Errores
 
-## Response Format
+La API utiliza códigos de estado HTTP estándar:
 
-All responses are in JSON format and include:
+* 200: Éxito
+* 201: Creado
+* 400: Solicitud incorrecta
+* 401: No autorizado (token inválido o expirado)
+* 403: Prohibido (CSRF token inválido)
+* 404: No encontrado
+* 500: Error del servidor
 
-* For list endpoints: paginated results with 10 items per page
-* For detail endpoints: complete object details
-* For error responses: error message and details
+## Paginación
 
-## Authentication Requirements
+Todos los endpoints de lista están paginados con 10 items por página. La respuesta incluye:
 
-* Most endpoints require authentication
-* Some endpoints allow read-only access without authentication
-* User registration is open to all
-* Session or basic authentication is required for write operations
-* Token authentication is not used
-
-## Error Handling
-
-The API uses standard HTTP status codes:
-
-* 200: Success
-* 201: Created
-* 400: Bad Request
-* 401: Unauthorized
-* 403: Forbidden
-* 404: Not Found
-* 500: Server Error
-
-## Pagination
-
-All list endpoints are paginated with 10 items per page. The response includes:
-
-* `count`: total number of items
-* `next`: URL for next page
-* `previous`: URL for previous page
-* `results`: array of items
+* `count`: número total de items
+* `next`: URL para la siguiente página
+* `previous`: URL para la página anterior
+* `results`: array de items

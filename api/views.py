@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework import permissions, viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Sum, F
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+from rest_framework.authtoken.models import Token
 from .models import Insumo, Receta, Venta, Merma #, RecetaInsumo
 # importar los serializadores de la app
 from .serializers import (
@@ -182,3 +184,35 @@ class MermaViewSet(viewsets.ModelViewSet):
 #         if receta_id:
 #             queryset = queryset.filter(receta_id=receta_id)
 #         return queryset
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def login_view(request):
+    """
+    Vista para autenticar usuarios y devolver un token de sesión
+    """
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if not username or not password:
+        return Response({
+            'error': 'Por favor proporcione username y password'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        login(request, user)  # Esto establece la sesión
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        })
+    else:
+        return Response({
+            'error': 'Credenciales inválidas'
+        }, status=status.HTTP_401_UNAUTHORIZED)
