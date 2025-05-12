@@ -76,6 +76,9 @@ class Venta(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     completada = models.BooleanField(default=False)
     
+    class Meta:
+        ordering = ['-fecha_venta']
+    
     def __str__(self):
         return f"Venta {self.id} - Total: {self.total}"
     

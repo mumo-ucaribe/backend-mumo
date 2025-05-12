@@ -150,19 +150,19 @@ class VentaSerializer(serializers.HyperlinkedModelSerializer):
         return value
 
     def create(self, validated_data):
-        recetas_ids = validated_data.pop('recetas_ids')
+        recetas_data = validated_data.pop('receta', [])
         venta = Venta.objects.create(**validated_data)
-        venta.receta.set(recetas_ids)
+        venta.receta.set(recetas_data)
         return venta
 
     def update(self, instance, validated_data):
-        recetas_ids = validated_data.pop('recetas_ids', None)
+        recetas_data = validated_data.pop('receta', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         
-        if recetas_ids is not None:
-            instance.receta.set(recetas_ids)
+        if recetas_data is not None:
+            instance.receta.set(recetas_data)
         
         return instance
 
