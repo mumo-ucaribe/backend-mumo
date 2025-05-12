@@ -128,21 +128,43 @@ class RecetaSerializer(serializers.HyperlinkedModelSerializer):
         
         return instance
 
+class RecetaSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receta
+        fields = ['id', 'nombre']
+
 class VentaSerializer(serializers.HyperlinkedModelSerializer):
-    recetas = RecetaSerializer(many=True, read_only=True)
+    recetas = RecetaSimpleSerializer(source='receta', many=True, read_only=True)
 
     class Meta:
         model = Venta
         fields = ['url', 'id', 'recetas', 'fecha_venta', 'total', 'completada']
+        read_only_fields = ['fecha_venta']
         extra_kwargs = {
-            'url': {'view_name': 'venta-detail'},
-            'recetas': {'view_name': 'receta-detail'}
+            'url': {'view_name': 'venta-detail'}
         }
 
     def validate_total(self, value):
         if value < 0:
             raise serializers.ValidationError("El total no puede ser negativo")
         return value
+
+    def create(self, validated_data):
+        recetas_ids = validated_data.pop('recetas_ids')
+        venta = Venta.objects.create(**validated_data)
+        venta.receta.set(recetas_ids)
+        return venta
+
+    def update(self, instance, validated_data):
+        recetas_ids = validated_data.pop('recetas_ids', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        if recetas_ids is not None:
+            instance.receta.set(recetas_ids)
+        
+        return instance
 
 # Serializador para el modelo de Merma
 class MermaSerializer(serializers.HyperlinkedModelSerializer):
