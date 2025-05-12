@@ -2,15 +2,15 @@ from django.shortcuts import render
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from django.db.models import Sum, F
+from django.db.models import Sum, F, QuerySet
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
-from .models import Insumo, Receta, Venta, Merma #, RecetaInsumo
+from .models import Insumo, Receta, Venta, Merma , RecetaInsumo
 # importar los serializadores de la app
 from .serializers import (
     UserSerializer, InsumoSerializer, RecetaSerializer,
-    VentaSerializer, MermaSerializer, #RecetaInsumoSerializer
+    VentaSerializer, MermaSerializer, RecetaInsumoSerializer
 )
 
 
@@ -172,18 +172,18 @@ class MermaViewSet(viewsets.ModelViewSet):
 
 # TODO: Analizar si se necesita un endpoint específico para RecetaInsumo
 
-# class RecetaInsumoViewSet(viewsets.ModelViewSet):
-#     queryset = RecetaInsumo.objects.all()
-#     serializer_class = RecetaInsumoSerializer
-#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-#     http_method_names = ['get', 'post', 'put', 'delete']
+class RecetaInsumoViewSet(viewsets.ModelViewSet):
+    queryset = RecetaInsumo.objects.all()
+    serializer_class = RecetaInsumoSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    http_method_names = ['get', 'post', 'put', 'delete']
 
-#     def get_queryset(self) -> QuerySet:
-#         queryset = RecetaInsumo.objects.all()
-#         receta_id = self.request.GET.get('receta', None)
-#         if receta_id:
-#             queryset = queryset.filter(receta_id=receta_id)
-#         return queryset
+    def get_queryset(self) -> QuerySet:
+        queryset = RecetaInsumo.objects.all()
+        receta_id = self.request.GET.get('receta', None)
+        if receta_id:
+            queryset = queryset.filter(receta_id=receta_id)
+        return queryset
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
