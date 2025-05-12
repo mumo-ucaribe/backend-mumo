@@ -135,31 +135,33 @@ class RecetaSimpleSerializer(serializers.ModelSerializer):
 
 class VentaSerializer(serializers.HyperlinkedModelSerializer):
     recetas = RecetaSimpleSerializer(source='receta', many=True, read_only=True)
-    receta_ids = serializers.ListField(
+    receta = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
-        required=False
+        required=True
     )
 
     class Meta:
         model = Venta
-        fields = ['url', 'id', 'recetas', 'receta_ids', 'fecha_venta', 'total', 'completada']
+        fields = ['url', 'id', 'recetas', 'receta', 'fecha_venta', 'total', 'completada']
         read_only_fields = ['fecha_venta']
         extra_kwargs = {
             'url': {'view_name': 'venta-detail'}
         }
 
-    def validate_receta_ids(self, value):
+    def validate_receta(self, value):
         from .models import Receta
-        if value:
-            # Verificar que todas las recetas existan
-            recetas_existentes = Receta.objects.filter(id__in=value).values_list('id', flat=True)
-            recetas_no_existentes = set(value) - set(recetas_existentes)
-            
-            if recetas_no_existentes:
-                raise serializers.ValidationError(
-                    f"Las siguientes recetas no existen: {recetas_no_existentes}"
-                )
+        if not value:
+            raise serializers.ValidationError("Debes proporcionar al menos una receta")
+        
+        # Verificar que todas las recetas existan
+        recetas_existentes = Receta.objects.filter(id__in=value).values_list('id', flat=True)
+        recetas_no_existentes = set(value) - set(recetas_existentes)
+        
+        if recetas_no_existentes:
+            raise serializers.ValidationError(
+                f"Las siguientes recetas no existen: {recetas_no_existentes}"
+            )
         return value
 
     def validate_total(self, value):
@@ -168,22 +170,32 @@ class VentaSerializer(serializers.HyperlinkedModelSerializer):
         return value
 
     def create(self, validated_data):
-        receta_ids = validated_data.pop('receta_ids', [])
+        from .models import Receta
+        receta_ids = validated_data.pop('receta', [])
+        
+        # Crear la venta
         venta = Venta.objects.create(**validated_data)
         
-        if receta_ids:
-            venta.receta.set(receta_ids)
+        # Obtener las recetas y establecer la relación
+        recetas = Receta.objects.filter(id__in=receta_ids)
+        venta.receta.add(*recetas)
         
         return venta
 
     def update(self, instance, validated_data):
-        receta_ids = validated_data.pop('receta_ids', None)
+        from .models import Receta
+        receta_ids = validated_data.pop('receta', None)
+        
+        # Actualizar campos básicos
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         
+        # Actualizar recetas si se proporcionaron
         if receta_ids is not None:
-            instance.receta.set(receta_ids)
+            recetas = Receta.objects.filter(id__in=receta_ids)
+            instance.receta.clear()  # Limpiar relaciones existentes
+            instance.receta.add(*recetas)  # Agregar nuevas relaciones
         
         return instance
 
